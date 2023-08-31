@@ -7,12 +7,10 @@ import {
   TouchableOpacity,
   TextInput,
 } from "react-native";
-import * as Speech from 'expo-speech';
 import QRCode from "react-native-qrcode-svg";
 import { encoding } from "../compression/lempel-ziv";
 import ViewShot from "react-native-view-shot";
 import * as Sharing from 'expo-sharing';
-import * as MediaLibrary from 'expo-media-library';
 
 class QRCodeGenerator extends Component {
   constructor(props) {
@@ -29,7 +27,6 @@ class QRCodeGenerator extends Component {
   componentDidMount() {
     const encodedData = encoding(this.state.data);
     this.setState({ data: encodedData });
-    Speech.speak("You are now on the QR Generator page. If you want to scan the qr code please swipe to Right");
   }
 
   //save the qrcode image function

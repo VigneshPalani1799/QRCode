@@ -12,13 +12,15 @@ export default class QRReader extends React.Component{
       hasPermission:null,
       scanned:false,
       text:'Not yet scanned',
-      lastPress:0
+      lastPress:0,
+      longPress:false
+
     }
   }
 
   componentDidMount(){
     this.askForCameraPermission();
-    Speech.speak("You are now on the home page of the app. To Generate QR Code, Swipe to left.")
+    Speech.speak("You are now on the home page of the app and the app is ready to Scan. To Generate QR Code, Swipe to left.")
   }
 
   askForCameraPermission = async()=>{
@@ -57,6 +59,15 @@ export default class QRReader extends React.Component{
     }, 1500);
   };
 
+  handleLongPress = ()=>{
+    if(Speech.isSpeakingAsync()){
+      Speech.pause();
+    }
+    else{
+      Speech.resume();
+    }
+  }
+
   render(){
     const { hasPermission, scanned, text } = this.state;
 
@@ -77,7 +88,7 @@ export default class QRReader extends React.Component{
     }
 
     return (
-      <TouchableWithoutFeedback onPress={this.handleDoubleTap}>
+      <TouchableWithoutFeedback onPress={this.handleDoubleTap} onLongPress={this.handleLongPress}>
         <View style={styles.container}>
           <View style={styles.barcodebox}>
             <BarCodeScanner

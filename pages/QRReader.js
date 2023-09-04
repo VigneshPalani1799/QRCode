@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, TouchableWithoutFeedback, } from 'react-native';
+import { StyleSheet, Text, View, Button, TouchableWithoutFeedback, Animated } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import * as Speech from 'expo-speech';
 import { decoding } from '../compression/lempel-ziv';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 
 export default class QRReader extends React.Component{
 
@@ -13,14 +14,56 @@ export default class QRReader extends React.Component{
       scanned:false,
       text:'Not yet scanned',
       lastPress:0,
-      longPress:false
-
+      longPress:false,
+      options:{
+        rate:1.0,
+      }
     }
+    this.translateY = new Animated.Value(0);
   }
+
+  handleGesture = Animated.event(
+    [{nativeEvent:{translationY: this.translateY}}],
+    {useNativeDriver:false}
+  );
+
+  handleStateChange = event => {
+    if (event.nativeEvent.state === State.END) {
+      const y = event.nativeEvent.translationY;
+      if (y < 0) {
+        // User has swiped up
+        this.handleSlideUp();
+      } else {
+        // User has swiped down
+        this.handleSlideDown();
+      }
+      this.translateY.setValue(0); // Reset translation
+    }
+  };
+
+  handleSlideUp = () => {
+    // Your logic for handling slide-up here
+    this.setState(prevState=>({
+      options:{
+        ...prevState.options,
+        rate:prevState.options.age+0.25,
+      }
+    }))
+  };
+
+  handleSlideDown = () => {
+    // Your logic for handling slide-down here
+    this.setState(prevState=>({
+      options:{
+        ...prevState.options,
+        rate:prevState.options.age-0.25,
+      }
+    }))
+  };
 
   componentDidMount(){
     this.askForCameraPermission();
-    Speech.speak("You are now on the home page of the app and the app is ready to Scan. To Generate QR Code, Swipe to left.")
+    Speech.speak("You are now on the home page of the app. The app is ready to Scan. To Generate QR Code, Swipe to left.")
   }
 
   askForCameraPermission = async()=>{
@@ -41,7 +84,7 @@ export default class QRReader extends React.Component{
   }
 
   speak = (data) => {
-    Speech.speak(data);
+    Speech.speak(data,this.state.options);
   }
 
   handleBarCodeScanned = ({ type, data }) => {
@@ -88,7 +131,7 @@ export default class QRReader extends React.Component{
     }
 
     return (
-      <TouchableWithoutFeedback onPress={this.handleDoubleTap} onLongPress={this.handleLongPress}>
+      <TouchableWithoutFeedback onPress={this.handleDoubleTap} onLongPress={this.handleLongPress} on>
         <View style={styles.container}>
           <View style={styles.barcodebox}>
             <BarCodeScanner
